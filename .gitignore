@@ -11,6 +11,9 @@
 *.exe
 *.out
 
+#test cases
+*.txt
+
 # C++ build directory (e.g., for make)
 build/
 
@@ -45,3 +48,4 @@ Thumbs.db
 
 # Local configuration file (uncomment if needed)
 # config.ini
+
