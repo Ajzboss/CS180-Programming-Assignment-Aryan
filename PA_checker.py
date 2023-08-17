@@ -121,5 +121,5 @@ def run_grid(test_dir):
 if __name__ == "__main__":
     # TODO: change this to your repo directory;
     #       it's recommended to use absolute path
-    your_repo_dir = r"C:\Users\Admin\source\repos\CS180-Programming-Assignment-Aryan"
+    your_repo_dir = "/u/eng/ugrad/janolkar/180/CS180-Programming-Assignment-Aryan"
     run_grid(your_repo_dir)

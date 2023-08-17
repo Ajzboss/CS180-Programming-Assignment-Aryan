@@ -36,13 +36,14 @@ def DP(n, H, tile_types, tile_values):
     # TODO you should change this
     memo = [[None for _ in range(n)] for _ in range(n)]
     res = helper(memo,H, tile_types, tile_values,cur_x=n-1,cur_y=n-1) 
-    #print(res)
+    #breakpoint
+    #print( f"memo:{memo}")
     attributes_dict = vars(res)
     largest_value = max(attributes_dict.values())
     #print(largest_value)
-    is_greater_than_zero = largest_value > 0
+    is_zero_or_greater = largest_value > -1
     #print(is_greater_than_zero)
-    return is_greater_than_zero
+    return is_zero_or_greater
 
 class health_counter:
     def __init__(self, value1, value2, value3, value4):
@@ -54,6 +55,8 @@ class health_counter:
         return f"self.no_token: {self.no_token}, self.prot_token: {self.prot_token}, self.mult_token: {self.mult_token}, self.both_tokens: {self.both_tokens}"
 
 def helper(memo,H,tile_types,tile_values,cur_x,cur_y):
+    if H<0:
+        return health_counter(neg_inf,neg_inf,neg_inf,neg_inf)
     if memo[cur_x][cur_y] != None:
         return memo[cur_x][cur_y]
     elif [cur_x,cur_y] == [0,0]:
@@ -64,36 +67,44 @@ def helper(memo,H,tile_types,tile_values,cur_x,cur_y):
         d = tile_values[cur_x,cur_y]
         from_above = helper(memo,H,tile_types,tile_values,cur_x-1,cur_y)
         from_left = helper(memo,H,tile_types,tile_values,cur_x,cur_y-1)
-        max_both = max(from_above.both_tokens-d,from_left.both_tokens-d)
-        max_mult = max(from_above.mult_token-d,from_left.mult_token-d,from_above.both_tokens,from_left.both_tokens)
-        max_prot = max(from_above.prot_token-d,from_left.prot_token-d)
         max_no = max(from_above.no_token-d,from_left.no_token-d,from_above.prot_token,from_left.prot_token)
+        max_prot = max(from_above.prot_token-d,from_left.prot_token-d)
+        max_mult = max(from_above.mult_token-d,from_left.mult_token-d,from_above.both_tokens,from_left.both_tokens)
+        max_both = max(from_above.both_tokens-d,from_left.both_tokens-d)
         memo[cur_x][cur_y] =  health_counter(max_no,max_prot,max_mult,max_both)
     elif tile_types[cur_x,cur_y] == 1: #healing done case
         h = tile_values[cur_x,cur_y]
         from_above = helper(memo,H,tile_types,tile_values,cur_x-1,cur_y)
         from_left = helper(memo,H,tile_types,tile_values,cur_x,cur_y-1)
-        max_both = max(from_above.both_tokens+h,from_left.both_tokens+h)
-        max_mult = max(from_above.mult_token+h,from_left.mult_token+h)
-        max_prot = max(from_above.prot_token+h,from_left.prot_token+h,from_above.both_tokens+(2*h),from_left.both_tokens+(2*h))
         max_no = max(from_above.no_token+h,from_left.no_token+h,from_above.mult_token+(2*h),from_left.mult_token+(2*h))
+        max_prot = max(from_above.prot_token+h,from_left.prot_token+h,from_above.both_tokens+(2*h),from_left.both_tokens+(2*h))
+        max_mult = max(from_above.mult_token+h,from_left.mult_token+h)
+        max_both = max(from_above.both_tokens+h,from_left.both_tokens+h)
         memo[cur_x][cur_y] =  health_counter(max_no,max_prot,max_mult,max_both)
     elif tile_types[cur_x,cur_y] == 2: #Protection token added case
         from_above = helper(memo,H,tile_types,tile_values,cur_x-1,cur_y)
         from_left = helper(memo,H,tile_types,tile_values,cur_x,cur_y-1)
-        max_both = max(from_above.both_tokens,from_left.both_tokens,from_above.mult_token,from_left.mult_token)
+        max_no = neg_inf
         max_prot = max(from_above.prot_token,from_left.prot_token,from_above.no_token,from_left.no_token)
-        memo[cur_x][cur_y] =  health_counter(neg_inf,max_prot,neg_inf,max_both)
+        max_mult = neg_inf
+        max_both = max(from_above.both_tokens,from_left.both_tokens,from_above.mult_token,from_left.mult_token)
+        memo[cur_x][cur_y] =  health_counter(max_no,max_prot,max_mult,max_both)
     elif tile_types[cur_x,cur_y] == 3: #Multiplication token added case
         from_above = helper(memo,H,tile_types,tile_values,cur_x-1,cur_y)
         from_left = helper(memo,H,tile_types,tile_values,cur_x,cur_y-1)
+        max_no = neg_inf
+        max_prot = neg_inf
         max_both = max(from_above.both_tokens,from_left.both_tokens,from_above.prot_token,from_left.prot_token)
         max_mult = max(from_above.mult_token,from_left.mult_token,from_above.no_token,from_left.no_token)
-        memo[cur_x][cur_y] =  health_counter(neg_inf,neg_inf,max_mult,max_both)
-
-
-    #print(f"cur_x:{cur_x},cur_y:{cur_y}, value:{memo[cur_x][cur_y]}")
-
+    if max_no<0:
+        max_no=neg_inf
+    if max_prot<0:
+        max_prot=neg_inf
+    if max_mult<0:
+        max_mult=neg_inf
+    if max_both<0:
+        max_both=neg_inf
+    memo[cur_x][cur_y] =  health_counter(max_no,max_prot,max_mult,max_both)    
     return memo[cur_x][cur_y]
 
 def write_output_file(output_file_name, result):
